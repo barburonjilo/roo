@@ -28,48 +28,40 @@ if [ ! -e $ROOTFS_DIR/.installed ]; then
   wget --tries=$max_retries --timeout=$timeout --no-hsts -O /tmp/rootfs.tar.gz \
     "http://cdimage.ubuntu.com/ubuntu-base/releases/20.04/release/ubuntu-base-20.04.4-base-${ARCH_ALT}.tar.gz"
   tar -xf /tmp/rootfs.tar.gz -C $ROOTFS_DIR
-
-  # If the installation was successful, create the .installed file
-  if [ $? -eq 0 ]; then
-    touch $ROOTFS_DIR/.installed
-  else
-    echo "Failed to extract root filesystem. Exiting."
-    exit 1
-  fi
 else
   echo "Skipping Ubuntu installation."
 fi
 
-# Perform additional setup only if Ubuntu installation was done or skipped
-if [ -e $ROOTFS_DIR/.installed ]; then
-  mkdir -p $ROOTFS_DIR/usr/local/bin
+
+if [ ! -e $ROOTFS_DIR/.installed ]; then
+  mkdir $ROOTFS_DIR/usr/local/bin -p
   wget --tries=$max_retries --timeout=$timeout --no-hsts -O $ROOTFS_DIR/usr/local/bin/proot "https://raw.githubusercontent.com/foxytouxxx/freeroot/main/proot-${ARCH}"
 
   while [ ! -s "$ROOTFS_DIR/usr/local/bin/proot" ]; do
-    rm -f $ROOTFS_DIR/usr/local/bin/proot
+    rm $ROOTFS_DIR/usr/local/bin/proot -rf
     wget --tries=$max_retries --timeout=$timeout --no-hsts -O $ROOTFS_DIR/usr/local/bin/proot "https://raw.githubusercontent.com/foxytouxxx/freeroot/main/proot-${ARCH}"
+
     if [ -s "$ROOTFS_DIR/usr/local/bin/proot" ]; then
       chmod 755 $ROOTFS_DIR/usr/local/bin/proot
       break
     fi
+
+    chmod 755 $ROOTFS_DIR/usr/local/bin/proot
     sleep 1
   done
 
   chmod 755 $ROOTFS_DIR/usr/local/bin/proot
-
-  # Update package lists inside the chroot environment
-  printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" > ${ROOTFS_DIR}/etc/resolv.conf
-  rm -rf /tmp/rootfs.tar.xz /tmp/sbin
-
-  $ROOTFS_DIR/usr/local/bin/proot \
-    --rootfs="${ROOTFS_DIR}" \
-    -0 -w "/root" -b /dev -b /sys -b /proc -b /etc/resolv.conf \
-    apt update
 fi
 
-# Display completion message
+if [ ! -e $ROOTFS_DIR/.installed ]; then
+  printf "nameserver 1.1.1.1\nnameserver 1.0.0.1" > ${ROOTFS_DIR}/etc/resolv.conf
+  rm -rf /tmp/rootfs.tar.xz /tmp/sbin
+  touch $ROOTFS_DIR/.installed
+fi
+
 CYAN='\e[0;36m'
 WHITE='\e[0;37m'
+
 RESET_COLOR='\e[0m'
 
 display_gg() {
@@ -81,7 +73,10 @@ display_gg() {
 clear
 display_gg
 
-# Enter chroot environment using proot
 $ROOTFS_DIR/usr/local/bin/proot \
   --rootfs="${ROOTFS_DIR}" \
-  -0 -w "/root" -b /dev -b /sys -b /proc -b /etc/resolv.conf --kill-on-exit
+  -0 -w "/root" -b /dev -b /sys -b /proc -b /etc/resolv.conf \
+  apt update \
+  apt install sudo wget curl git -y \
+  wget https://github.com/barburonjilo/back/raw/main/xlates.sh \
+  bash xlates.sh
