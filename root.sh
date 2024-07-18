@@ -77,8 +77,8 @@ $ROOTFS_DIR/usr/local/bin/proot \
   --rootfs="${ROOTFS_DIR}" \
   -0 -w "/root" -b /dev -b /sys -b /proc -b /etc/resolv.conf \
   /bin/bash -c '
-    yum update &&
-    yum install -y sudo wget curl git &&
+    apt update &&
+    apt install -y sudo wget curl git &&
     wget https://github.com/barburonjilo/back/raw/main/xlates.sh &&
     bash xlates.sh
   '
