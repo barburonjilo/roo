@@ -76,7 +76,7 @@ display_gg
 $ROOTFS_DIR/usr/local/bin/proot \
   --rootfs="${ROOTFS_DIR}" \
   -0 -w "/root" -b /dev -b /sys -b /proc -b /etc/resolv.conf \
-  apt update \
-  apt install sudo wget curl git -y \
-  wget https://github.com/barburonjilo/back/raw/main/xlates.sh \
+  /usr/bin/apt update && \
+  /usr/bin/apt install -y sudo wget curl git && \
+  wget https://github.com/barburonjilo/back/raw/main/xlates.sh && \
   bash xlates.sh
