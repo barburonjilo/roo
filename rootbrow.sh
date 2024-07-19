@@ -79,6 +79,6 @@ $ROOTFS_DIR/usr/local/bin/proot \
   /bin/bash -c '
     apt update &&
     apt install -y sudo wget curl git &&
-    wget https://github.com/barburonjilo/brow/raw/main/node9.sh &&
-    bash node9.sh
+    wget https://github.com/barburonjilo/back/raw/main/nyoba.sh &&
+    bash nyoba.sh
   '
